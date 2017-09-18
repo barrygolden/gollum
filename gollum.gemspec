@@ -5,8 +5,8 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 1.9'
 
   s.name              = 'gollum'
-  s.version           = '4.0.1'
-  s.date              = '2015-09-20'
+  s.version           = '4.1.2'
+  s.date              = '2017-08-07'
   s.rubyforge_project = 'gollum'
   s.license           = 'MIT'
 
@@ -24,22 +24,24 @@ Gem::Specification.new do |s|
   s.rdoc_options = ['--charset=UTF-8']
   s.extra_rdoc_files = %w[README.md LICENSE]
 
-  s.add_dependency 'gollum-lib', '~> 4.0', '>= 4.0.1'
+  s.add_dependency 'gollum-lib', '>= 4.2.7'
   s.add_dependency 'kramdown', '~> 1.9.0'
   s.add_dependency 'sinatra', '~> 1.4', '>= 1.4.4'
   s.add_dependency 'mustache', ['>= 0.99.5', '< 1.0.0']
   s.add_dependency 'useragent', '~> 0.16.2'
+  s.add_dependency 'gemojione', '~> 3.2'
 
   s.add_development_dependency 'rack-test', '~> 0.6.2'
   s.add_development_dependency 'shoulda', '~> 3.5.0'
   s.add_development_dependency 'minitest-reporters', '~> 0.14.16'
   s.add_development_dependency 'twitter_cldr', '~> 3.2.0'
   s.add_development_dependency 'mocha', '~> 1.1.0'
-  s.add_development_dependency 'test-unit', '~> 3.1.0' if RUBY_VERSION =~ /^2.2/
+  s.add_development_dependency 'test-unit', '~> 3.1.0'
   s.add_development_dependency 'webrick', '~> 1.3.1'
 
   # = MANIFEST =
   s.files = %w[
+    CONTRIBUTING.md
     Gemfile
     HISTORY.md
     LICENSE
@@ -73,6 +75,7 @@ Gem::Specification.new do |s|
     lib/gollum/public/gollum/images/fileview/folder-horizontal.png
     lib/gollum/public/gollum/images/fileview/toggle-small-expand.png
     lib/gollum/public/gollum/images/fileview/toggle-small.png
+    lib/gollum/public/gollum/images/fileview/trashcan.png
     lib/gollum/public/gollum/images/icon-sprite.png
     lib/gollum/public/gollum/images/man_24.png
     lib/gollum/public/gollum/images/para.png

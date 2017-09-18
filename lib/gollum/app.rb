@@ -49,7 +49,7 @@ module Precious
   class App < Sinatra::Base
     register Mustache::Sinatra
     include Precious::Helpers
-    
+
     dir     = File.dirname(File.expand_path(__FILE__))
 
     # Detect unsupported browsers.
@@ -59,6 +59,7 @@ module Precious
         Browser.new('Internet Explorer', '10.0'),
         Browser.new('Chrome', '7.0'),
         Browser.new('Firefox', '4.0'),
+        Browser.new('Safari', '9.0')
     ]
 
     def supported_useragent?(user_agent)
@@ -95,7 +96,6 @@ module Precious
     before do
       settings.wiki_options[:allow_editing] = settings.wiki_options.fetch(:allow_editing, true)
       @allow_editing = settings.wiki_options[:allow_editing]
-      forbid unless @allow_editing || request.request_method == "GET"
       Precious::App.set(:mustache, {:templates => settings.wiki_options[:template_dir]}) if settings.wiki_options[:template_dir]
       @base_url = url('/', false).chomp('/')
       @page_dir = settings.wiki_options[:page_file_dir].to_s
@@ -128,6 +128,14 @@ module Precious
 
     def wiki_new
       Gollum::Wiki.new(settings.gollum_path, settings.wiki_options)
+    end
+
+    get '/emoji/:name' do
+      begin
+        [200, {'Content-Type' => 'image/png'}, emoji(params['name'])]
+      rescue ArgumentError
+        not_found
+      end
     end
 
     get '/data/*' do
@@ -164,6 +172,8 @@ module Precious
     end
 
     post '/uploadFile' do
+      forbid unless @allow_editing
+
       wiki = wiki_new
 
       unless wiki.allow_uploads
@@ -212,7 +222,22 @@ module Precious
       end
     end
 
+    post '/deleteFile/*' do
+      forbid unless @allow_editing
+      wiki = wiki_new
+      filepath = params[:splat].first
+      unless filepath.nil?
+        commit           = commit_message
+        commit[:message] = "Deleted #{filepath}"
+        wiki.delete_file(filepath, commit)
+      end
+
+      redirect to('/fileview')
+    end
+
     post '/rename/*' do
+      forbid unless @allow_editing
+
       wikip = wiki_page(params[:splat].first)
       halt 500 if wikip.nil?
       wiki   = wikip.wiki
@@ -249,6 +274,8 @@ module Precious
     end
 
     post '/edit/*' do
+      forbid unless @allow_editing
+
       path      = '/' + clean_url(sanitize_empty_params(params[:path])).to_s
       page_name = CGI.unescape(params[:page])
       wiki      = wiki_new
@@ -308,6 +335,8 @@ module Precious
     end
 
     post '/create' do
+      forbid unless @allow_editing
+
       name   = params[:page].to_url
       path   = sanitize_empty_params(params[:path]) || ''
       format = params[:format].intern
@@ -319,7 +348,7 @@ module Precious
         wiki.write_page(name, format, params[:content], commit_message, path)
 
         page_dir = settings.wiki_options[:page_file_dir].to_s
-        redirect to("/#{clean_url(::File.join(page_dir, path, encodeURIComponent(name)))}")
+        redirect to("/#{clean_url(::File.join(encodeURIComponent(page_dir), encodeURIComponent(path), encodeURIComponent(name)))}")
       rescue Gollum::DuplicatePageError => e
         @message = "Duplicate page: #{e.message}"
         mustache :error
@@ -327,6 +356,8 @@ module Precious
     end
 
     post '/revert/*/:sha1/:sha2' do
+      forbid unless @allow_editing
+
       wikip = wiki_page(params[:splat].first)
       @path = wikip.path
       @name = wikip.name
@@ -350,6 +381,8 @@ module Precious
     end
 
     post '/preview' do
+      forbid unless @allow_editing
+
       wiki           = wiki_new
       @name          = params[:page] || "Preview"
       @page          = wiki.preview_page(@name, params[:content], params[:format])
@@ -431,6 +464,7 @@ module Precious
         @name    = name
         @content = page.formatted_data
         @version = version
+        @bar_side = wikip.wiki.bar_side
         mustache :page
       elsif file = wikip.wiki.file("#{file_path}", version, true)
         show_file(file)
@@ -496,7 +530,7 @@ module Precious
 
         # Extensions and layout data
         @editable      = true
-        @page_exists   = !page.versions.empty?
+        @page_exists   = !page.last_version.nil?
         @toc_content   = wiki.universal_toc ? @page.toc_data : nil
         @mathjax       = wiki.mathjax
         @h1_title      = wiki.h1_title

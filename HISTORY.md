@@ -1,3 +1,13 @@
+# 4.1.2 /2017-08-07
+
+* Lock to a newer version of gollum-lib to avoid installing an outdated and vulnerable dependency (nokogiri) on ruby 2.0. See https://github.com/gollum/gollum-lib/pull/279. Note: this breaks semantic versioning so those using outdated rubies will discover the problem on update.
+
+# 4.1.0 /2017-03-09
+
+* Added file deletion functionality to file view
+* Various performance improvements
+* Emoji support
+
 # 4.0.0 /2015-04-11
 
 * Now compatible with JRuby (via the [rjgit](https://github.com/repotag/rjgit) [adapter](https://github.com/repotag/gollum-lib_rjgit_adapter))

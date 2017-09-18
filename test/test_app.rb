@@ -30,6 +30,11 @@ context "Frontend" do
     # and in file names saved to disk
     # urls are not case sensitive
     assert_equal 'Title-Space', 'Title Space'.to_url
+  end
+
+  test "translation" do
+    # we transliterate only when adapter is grit
+    return if defined?(Gollum::GIT_ADAPTER) && Gollum::GIT_ADAPTER != 'grit'
 
     # ascii only file names prevent UTF8 issues
     # when using git repos across operating systems
@@ -705,6 +710,18 @@ context "Frontend with lotr" do
 
     get "/Mordor/Orc"
     assert_match /not so big smelly creatures/, last_response.body
+  end
+
+  test "existing emoji" do
+    get "/emoji/heart"
+    assert_equal 200, last_response.status
+    assert_equal 'image/png', last_response.headers['Content-Type']
+    assert_equal [137, 80, 78, 71, 13, 10, 26, 10], last_response.body.each_byte.to_a[0..7]
+  end
+
+  test "missing emoji" do
+    get "/emoji/oggy_was_here"
+    assert_equal 404, last_response.status
   end
 
   def app
